@@ -31,3 +31,4 @@ Falls die Topics mit einem Großbuchstaben anfangen, dann diese Checkbox wählen
 Dies bezieht sich allerdings auch auf die Schreibweise der auszuwertenden Sensordaten (Datei SensorKeywords.voc) 
 
 Weitere Hinweise im Wiki
+
