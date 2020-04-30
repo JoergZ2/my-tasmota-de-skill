@@ -1,22 +1,25 @@
-
 skillMetadata:
   sections:
-    - name: Options << Name of section
+    - name: MQTT-Settings
       fields:
-        - name: internal_python_variable_name
+        - name: mqttbroker
           type: text
-          label: Setting Friendly Display Name
-          value: ""
-          placeholder: demo prompt in the input box
-    - name: Login << Name of another section
+          label: Insert the broker's IP
+          value:
+        - name: mqttport
+          type: number
+          label: Insert the broker's Port
+          value: 1883
+    - name: Tasmota FullTopicSyntax
       fields:
-        - type: label
-          label: Just a little bit of extra info for the user to understand following settings
-        - name: username
-          type: text
-          label: Username
-          value: ""
-        - name: password
-          type: password
-          label: Password
-          value: ""
+        - name: fulltopicsyntax
+          type: select
+          label: Choose Tasmota's FullTopicSyntax
+          options: '%prefix%/%topic%/ (default)|default;%topic%/%prefix%/(HomeAssistant)|homeassistant'
+          value: default
+    - name: Capitalization
+      fields:
+        - name: capitalization
+          type: checkbox
+          label: Click if device topics start with capital letters
+          value: "false"
