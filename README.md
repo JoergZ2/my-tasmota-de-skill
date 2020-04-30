@@ -1,48 +1,32 @@
-# MQTT for MycroftAI
+## Introduction
+This skill is used to control IoT devices that are operated with the Tasmota firmware. Only MQTT (unencrypted, QoS 0) is considered as the communication protocol. The default syntax %prefix%/%topic%/ as well as %topic%/%prefix%/ (= setoption19/homeassistant mode) is available. The skill is currently especially designed for use in German and is case sensitive for topics. The following module must be installed: paho-mqtt.
 
-This is a skill written for mycroft to publish commands over an mqtt broker for home automation or any other purpose.
+## Configuration/setup
+### MQTT Settings
+Enter IP of the MQTT broker
+Enter the port number of the MQTT broker (1883 is preset)
 
-# Commands
+### Tasmota FullTopicSyntax
+Choice between the %prefix%/%topic%/ (default) or %topic%/%prefix%/ (Homeassstant or setoption19 type)
 
-Currently it will publish the action to a topic built from the commands said, for example
-- say `hey mycroft, turn the light on` and mycroft will publish `on` to `/mycroft/turn/light/on`.
-- say `hey mycroft, switch the tv on` and mycroft will publish `on` to `/mycroft/switch/tv/on`.
+### Capitalization
+If the topics start with a capital letter, select this checkbox. ALL topics (= devices) with a leading uppercase letter are then generated. This also means that no other capital letter, e.g. TH10/TH16 or POW, may NOT occur.
 
-# Installing the skill
+More hints: Wiki (in german)
 
-This skill requires paho-mqtt to be installed in your mycroft virtual enviroment.
+## Deutsche Version
+Dieser Skill dient der Steuerung von IoT-Geräten, die mit der Firmware Tasmota betrieben werden. Als Kommunikationsprotokoll ist ausschließlich MQTT (unverschlüsselt, QoS 0) berücksichtigt. Zur Auswahl steht die default Syntax %prefix%/%topic%/ sowie %topic%/%prefix%/ (= setoption19/homeassistant Modus). Der Skill ist derzeit besonders auf die Nutzung in Deutsch ausgelegt und berücksichtigt die Groß- und Kleinschreibung von topics. Folgendes  Modul muss installiert werden: paho-mqtt.
 
-If you already have mycroft running stop it and enter the following commands,
-- to enter the virtual enviroment `workon mycroft`.
-- now to install paho-mqtt `pip install paho-mqtt`.
-- now you can exit the virtual enviroment by entering `deactivate`
+## Configuration/Setup
+### MQTT-Settings
+IP des MQTT-Brokers eingeben
+Portnummer des MQTT-Brokers eingeben (1883 ist vorbelegt)
 
-If you have not yet setup mycroft then simply add `paho-mqtt==1.1` to the requirments.txt file before running dev_setup.sh
+### Tasmota FullTopicSyntax
+Auswahl zwischen dem Typ %prefix%/%topic%/ (vorbelegt) oder %topic%/%prefix%/ (Homeassstant bzw. setoption19 Typ)
 
-Now you have paho-mqtt installed move the mycroft skills directory and download the skill.
-- Move into the directory `cd ~/mycroft-core/mycroft/skills`
-- Clone the repository `git clone https://github.com/jamiehoward430/mycroft-mymqtt.git`
-- Rename it `mv mycroft-mymqtt mymqtt`
+### Capitalization
+Falls die Topics mit einem Großbuchstaben anfangen, dann diese Checkbox wählen. Es werden dann ALLE Topics (= devices, = Geräte) mit einem führenden Großbuchstaben erzeugt. Das bedeutet gleichzeitig, dass kein weiterer Großbuchstabe z. B. wie TH10/TH16 oder POW NICHT vorkommen darf.
+Dies bezieht sich allerdings auch auf die Schreibweise der auszuwertenden Sensordaten (Datei SensorKeywords.voc) 
 
-# Setup mycroft.conf
-Add the following lines to your config file and adjust to your needs, if you ar not using SSL or authentication
-just change them to no.
-If you are using SSL and a self signed certificate you will need to change mqtt-ca-cert to the location of your cerftificate,
-Or you can add it the default trusted certificates.
-
-- Copy your certificate to directory:```sudo cp yourcert.crt /usr/local/share/ca-certificates/yourcert.crt```
-- Update the CA store:```sudo update-ca-certificates```
-
-```
-  "mymqttskill": {
-    "protocol": "mqtt",
-    "mqtt-ssl": "yes",
-    "mqtt-ca-cert": "/etc/ssl/certs/ca-certificates.crt",
-    "mqtt-host": "example.com",
-    "mqtt-port": 8883,
-    "mqtt-auth": "yes",
-    "mqtt-user": "user",
-    "mqtt-pass": "pass"
-  }
-```
-Thas it, now start mycroft and start turning your light on and off.
+Weitere Hinweise im Wiki
