@@ -5,7 +5,8 @@ from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
 import paho.mqtt.client as mqtt
-__author__ = 'jamiehoward430 modified by JoergZ2'
+__author__ = 'aussieW (jamiehoward430) modified by JoergZ2'
+#test
 LOGGER = getLogger(__name__)
 class MyTasmotaDe(MycroftSkill):
 
