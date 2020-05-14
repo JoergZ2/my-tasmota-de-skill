@@ -5,6 +5,7 @@ from adapt.intent import IntentBuilder
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
 import paho.mqtt.client as mqtt
+from mycroft.util import play_audio_file, resolve_resource_file
 __author__ = 'aussieW (jamiehoward430) modified by JoergZ2'
 #test
 LOGGER = getLogger(__name__)
@@ -208,6 +209,8 @@ class MyTasmotaDe(MycroftSkill):
             #if (self.mqttssl == "yes"):
             #    mqttc.tls_set(self.mqttca)
             LOGGER.info("AJW - Module automation_command connect to: " + str(self.mqttport))
+            play_audio_file(resolve_resource_file("snd/verstanden.mp3"))
+            time.sleep(1.0)
             self.mqttc.connect(self.mqtthost, self.mqttport, keepalive=10)
             self.mqttc.on_message = self.on_message
             self.mqttc.loop_start()
@@ -296,6 +299,10 @@ class MyTasmotaDe(MycroftSkill):
         mdl_name = mdl_name.replace(' ','_')
         if mdl_name == "werkstatt_radio":
             mdl_name = "werkstattradio"
+        if mdl_name == "stromzähler 1":
+            mdl_name = "stromzähler_1"
+        if mdl_name == "stromzähler 2":
+            mdl_name = "stromzähler_2"
         if mdl_name == "außenthermometer":
             mdl_name = "TH10"
         if self.capitalization:
@@ -317,6 +324,8 @@ class MyTasmotaDe(MycroftSkill):
                 #self.mqttc.tls_set(self.mqttca)
             LOGGER.info("Funk Request AJW - connect to: " + self.mqtthost)
             #LOGGER.info("AJW - connect to: " + str(self.mqttport))
+            play_audio_file(resolve_resource_file("snd/verstanden.mp3"))
+            time.sleep(1)
             self.mqttc.connect(self.mqtthost,self.mqttport)
             self.mqttc.on_message = self.on_message
             self.mqttc.loop_start()
