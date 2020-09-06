@@ -7,6 +7,8 @@ from mycroft.util.log import getLogger
 import paho.mqtt.client as mqtt
 from mycroft.util import play_audio_file, resolve_resource_file
 __author__ = 'aussieW (jamiehoward430) modified by JoergZ2'
+from mpd import MPDClient
+mpcc = MPDClient()
 #test
 LOGGER = getLogger(__name__)
 class MyTasmotaDe(MycroftSkill):
@@ -94,7 +96,6 @@ class MyTasmotaDe(MycroftSkill):
                      with open("/var/log/mycroft/timer.log","w"): #kills /var/log/mycroft/timer.log if timer function  is inactive
                          pass
                  if 'ON' in self.timer_logs[0]:
-                     LOGGER.info("an richtiger Stelle")
                      for i in range(1,5):
                          self.tim_grp_name = "Timers" + str(i) #builts key names
                          self.timers = eval(self.timer_logs[i]) # makes string to dict
@@ -245,6 +246,7 @@ class MyTasmotaDe(MycroftSkill):
         mdl_name = mdl_name.replace(' ', '_')
         val_name = message.data.get("ValueKeyword")
         loc_name = message.data.get("LocationKeyword")
+        service_name = message.data.get("ServiceKeyword")
 
         if loc_name:
             loc_name = loc_name.replace(' ', '_')
