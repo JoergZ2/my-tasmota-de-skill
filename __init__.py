@@ -210,7 +210,8 @@ class MyTasmotaDe(MycroftSkill):
             #if (self.mqttssl == "yes"):
             #    mqttc.tls_set(self.mqttca)
             LOGGER.info("AJW - Module automation_command connect to: " + str(self.mqttport))
-            play_audio_file(resolve_resource_file("snd/verstanden.mp3"))
+            #play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
+            self.speak_dialog('verstanden')
             time.sleep(1.0)
             self.mqttc.connect(self.mqtthost, self.mqttport, keepalive=10)
             self.mqttc.on_message = self.on_message
@@ -324,9 +325,10 @@ class MyTasmotaDe(MycroftSkill):
                 #self.mqttc.username_pw_set(self.mqttuser,self.mqttpass)
             #if (self.mqttssl == "yes"):
                 #self.mqttc.tls_set(self.mqttca)
-            LOGGER.info("Funk Request AJW - connect to: " + self.mqtthost)
+            LOGGER.info("Funk Request AJW - connect to: " + str(self.mqtthost))
             #LOGGER.info("AJW - connect to: " + str(self.mqttport))
-            play_audio_file(resolve_resource_file("snd/verstanden.mp3"))
+            #play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
+            self.speak_dialog('verstanden')
             time.sleep(1)
             self.mqttc.connect(self.mqtthost,self.mqttport)
             self.mqttc.on_message = self.on_message
@@ -438,14 +440,16 @@ class MyTasmotaDe(MycroftSkill):
                 answer = "Die Temperatur beträgt " + str(value_temp) + " Grad und die Luftfeuchtigkeit ist " + str(value_hum) + " Prozent."
         elif "StatusSTS" in values_dict:
             value_power = values_dict['StatusSTS']['POWER']
-            value_power = value_power.replace('ON','AN').replace('OFF','AUS')
+            value_power = value_power.replace('ON','an').replace('OFF','aus')
             answer = "Der Schaltzustand ist " + value_power
+            #self.speak_dialog('aus')
             #LOGGER.info("Antwort: " + answer)
         elif "POWER" in values_dict:
             #LOGGER.info("Power empfangen")
             value_power = values_dict['POWER']
-            value_power = value_power.replace('ON','AN').replace('OFF','AUS')
+            value_power = value_power.replace('ON','an').replace('OFF','aus')
             answer = device_name + " ist " + value_power + "geschaltet."
+            #self.speak_dialogue('an')
 
         else:
             LOGGER.info('AJW: Received a message' + values_dict)
