@@ -9,7 +9,7 @@ from mycroft.util import play_audio_file, resolve_resource_file
 __author__ = 'aussieW (jamiehoward430) modified by JoergZ2'
 from mpd import MPDClient
 mpcc = MPDClient()
-##test
+#test
 ##comment
 LOGGER = getLogger(__name__)
 class MyTasmotaDe(MycroftSkill):
@@ -211,8 +211,8 @@ class MyTasmotaDe(MycroftSkill):
             #if (self.mqttssl == "yes"):
             #    mqttc.tls_set(self.mqttca)
             LOGGER.info("AJW - Module automation_command connect to: " + str(self.mqttport))
-            #play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
-            self.speak_dialog('verstanden')
+            play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
+            #self.speak_dialog('verstanden')
             time.sleep(1.0)
             self.mqttc.connect(self.mqtthost, self.mqttport, keepalive=10)
             self.mqttc.on_message = self.on_message
@@ -307,7 +307,7 @@ class MyTasmotaDe(MycroftSkill):
             mdl_name = "stromzähler_1"
         if mdl_name == "stromzähler 2":
             mdl_name = "stromzähler_2"
-        if mdl_name == "außenthermometer":
+        if mdl_name == "außenthermometer"or mdl_name == "aussenthermometer":
             mdl_name = "TH10"
         if self.capitalization:
             mdl_name = mdl_name.capitalize()
@@ -328,8 +328,8 @@ class MyTasmotaDe(MycroftSkill):
                 #self.mqttc.tls_set(self.mqttca)
             LOGGER.info("Funk Request AJW - connect to: " + str(self.mqtthost))
             #LOGGER.info("AJW - connect to: " + str(self.mqttport))
-            #play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
-            self.speak_dialog('verstanden')
+            play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
+            #self.speak_dialog('verstanden')
             time.sleep(1)
             self.mqttc.connect(self.mqtthost,self.mqttport)
             self.mqttc.on_message = self.on_message
@@ -422,7 +422,7 @@ class MyTasmotaDe(MycroftSkill):
             values_dict['StatusSNS']['ENERGY']['Total'])
             trlt[4] = str(trlt[4])
             trlt[4] = trlt[4].replace('.',',')
-            answer = "Die Spannung beträgt " + str(trlt[0]) + " Volt, " + \
+            answer = "Die Spannung ist " + str(trlt[0]) + " Volt, " + \
                      "der aktuelle Strom " + str(trlt[1]) + " Ampere. " + \
                      "Der Verbrauch liegt jetzt bei " + str(trlt[2]) + " Watt. " +\
                      "Heute wurden " + str(trlt[3]) + \
@@ -433,12 +433,22 @@ class MyTasmotaDe(MycroftSkill):
              an if statement for each of them.'''
             if "SI7021" in values_dict['StatusSNS']:
                 value_temp = values_dict['StatusSNS']['SI7021']['Temperature']
+                if value_temp < 0:
+                    temp_prefix = "minus "
+                    LOGGER.info("Temperatur: ", temp_prefix + str(value_temp))
+                else:
+                    temp_prefix = ""
+                    LOGGER.info("Temperatur: ", temp_prefix + str(value_temp))
                 value_hum = values_dict['StatusSNS']['SI7021']['Humidity']
-                answer = "Die Temperatur beträgt " + str(value_temp) + " Grad und die Luftfeuchtigkeit ist " + str(value_hum) + " Prozent."
+                answer = "Die Temperatur ist " + temp_prefix + str(value_temp) + " Grad und die Luftfeuchtigkeit ist " + str(value_hum) + " Prozent."
             if "DHT11" in values_dict['StatusSNS']:
                 value_temp = values_dict['StatusSNS']['DHT11']['Temperature']
+                if value_temp < 0:
+                    temp_prefix = "minus "
+                else:
+                    temp_prefix = ""
                 value_hum = values_dict['StatusSNS']['DHT11']['Humidity']
-                answer = "Die Temperatur beträgt " + str(value_temp) + " Grad und die Luftfeuchtigkeit ist " + str(value_hum) + " Prozent."
+                answer = "Die Temperatur ist " + temp_prefix + str(value_temp) + " Grad und die Luftfeuchtigkeit ist " + str(value_hum) + " Prozent."
         elif "StatusSTS" in values_dict:
             value_power = values_dict['StatusSTS']['POWER']
             value_power = value_power.replace('ON','an').replace('OFF','aus')
