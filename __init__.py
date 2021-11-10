@@ -119,13 +119,13 @@ class MyTasmotaDe(MycroftSkill):
                          with open("/var/log/mycroft/timersets.log", "r") as tl: #active timers to speech
                              answer = tl.readline()
                              if len(answer) == 0:
-                                 answer = ("Zeitpläne sind aktiviert, aber kein Timer ist aktiv")
+                                 answer = ("Zeitpläne sind aktiviert, aber kein Timer ist aktiv.")
                          with open("/var/log/mycroft/timer.log", "w"): #makes /var/log/mycroft/timer.log empty
                              pass
                          with open("/var/log/mycroft/timersets.log", "w"): #makes /var/log/mycroft/timersets.log empty
                              pass
                      except IOError as e: #if no timersets.log has been written
-                         answer = ("Zeitpläne sind aktiviert, aber kein Timer ist aktiv")
+                         answer = ("Zeitpläne sind aktiviert, aber kein Timer ist aktiv.")
                          with open("/var/log/mycroft/timer.log", "w"): #makes /var/log/mycroft/timer.log empty if timersets.log empty
                              pass
         if answer != "":
@@ -211,7 +211,7 @@ class MyTasmotaDe(MycroftSkill):
             #if (self.mqttssl == "yes"):
             #    mqttc.tls_set(self.mqttca)
             LOGGER.info("AJW - Module automation_command connect to: " + str(self.mqttport))
-            play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
+            play_audio_file(resolve_resource_file("/home/pi/mycroft-core/mycroft/res/snd/verstanden.mp3"))
             #self.speak_dialog('verstanden')
             time.sleep(1.0)
             self.mqttc.connect(self.mqtthost, self.mqttport, keepalive=10)
@@ -303,11 +303,11 @@ class MyTasmotaDe(MycroftSkill):
         mdl_name = mdl_name.replace(' ','_')
         if mdl_name == "werkstatt_radio":
             mdl_name = "werkstattradio"
-        if mdl_name == "stromzähler 1":
-            mdl_name = "stromzähler_1"
+        if mdl_name == "messpunkt 1":
+            mdl_name = "Messpunkt_1"
         if mdl_name == "stromzähler 2":
             mdl_name = "stromzähler_2"
-        if mdl_name == "außenthermometer"or mdl_name == "aussenthermometer":
+        if mdl_name == "außenthermometer" or mdl_name == "aussenthermometer" or mdl_name == "schuppen" or mdl_name == "durchgang":
             mdl_name = "TH10"
         if self.capitalization:
             mdl_name = mdl_name.capitalize()
@@ -328,7 +328,7 @@ class MyTasmotaDe(MycroftSkill):
                 #self.mqttc.tls_set(self.mqttca)
             LOGGER.info("Funk Request AJW - connect to: " + str(self.mqtthost))
             #LOGGER.info("AJW - connect to: " + str(self.mqttport))
-            play_audio_file(resolve_resource_file("/usr/lib/python3.8/site-packages/mycroft/res/snd/verstanden.mp3"))
+            play_audio_file(resolve_resource_file("/home/pi/mycroft-core/mycroft/res/snd/verstanden.mp3"))
             #self.speak_dialog('verstanden')
             time.sleep(1)
             self.mqttc.connect(self.mqtthost,self.mqttport)
@@ -433,26 +433,20 @@ class MyTasmotaDe(MycroftSkill):
              an if statement for each of them.'''
             if "SI7021" in values_dict['StatusSNS']:
                 value_temp = values_dict['StatusSNS']['SI7021']['Temperature']
-                if value_temp < 0:
-                    temp_prefix = "minus "
-                    LOGGER.info("Temperatur: ", temp_prefix + str(value_temp))
-                else:
-                    temp_prefix = ""
-                    LOGGER.info("Temperatur: ", temp_prefix + str(value_temp))
                 value_hum = values_dict['StatusSNS']['SI7021']['Humidity']
-                answer = "Die Temperatur ist " + temp_prefix + str(value_temp) + " Grad und die Luftfeuchtigkeit ist " + str(value_hum) + " Prozent."
+                value_temp = str(value_temp).replace('.',',')
+                value_hum = str(value_hum).replace('.',',')
+                answer = "Die Temperatur ist " + value_temp + " Grad und die Luftfeuchtigkeit ist " + value_hum + " Prozent."
             if "DHT11" in values_dict['StatusSNS']:
                 value_temp = values_dict['StatusSNS']['DHT11']['Temperature']
-                if value_temp < 0:
-                    temp_prefix = "minus "
-                else:
-                    temp_prefix = ""
                 value_hum = values_dict['StatusSNS']['DHT11']['Humidity']
-                answer = "Die Temperatur ist " + temp_prefix + str(value_temp) + " Grad und die Luftfeuchtigkeit ist " + str(value_hum) + " Prozent."
+                value_temp = str(value_temp).replace('.',',')
+                value_hum = str(value_hum).replace('.',',')
+                answer = "Die Temperatur ist " + value_temp + " Grad und die Luftfeuchtigkeit ist " + value_hum + " Prozent."
         elif "StatusSTS" in values_dict:
             value_power = values_dict['StatusSTS']['POWER']
             value_power = value_power.replace('ON','an').replace('OFF','aus')
-            answer = "Der Schaltzustand ist " + value_power
+            answer = "Der Schaltzustand ist " + value_power + "."
             #self.speak_dialog('aus')
             #LOGGER.info("Antwort: " + answer)
         elif "POWER" in values_dict:
