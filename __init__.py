@@ -82,55 +82,6 @@ class MyTasmotaDe(MycroftSkill):
         self.watt = str(watt); self.watt = self.watt.replace('.',',')
         return [self.val1, self.val2, self.val3,self.val4,val5, self.watt]
 
-    def timer_request_answer(self):
-        '''
-        This function collects 5 JSON messages , if there was a questions for timers ("Zeitplan").\
-        It is necessary because Tasmota sends 5 messages  with information about timers.\
-        Maybee that there is a better way to store the results than using log files...
-        '''
-        answer = ""
-        with open("/var/log/mycroft/timer.log", "r") as f:
-            self.timer_logs = f.readlines()
-            if len(self.timer_logs) == 5:
-                 if 'OFF' in self.timer_logs[0]:
-                     answer = "Zeitpläne sind deaktiviert!"
-                     with open("/var/log/mycroft/timer.log","w"): #kills /var/log/mycroft/timer.log if timer function  is inactive
-                         pass
-                 if 'ON' in self.timer_logs[0]:
-                     for i in range(1,5):
-                         self.tim_grp_name = "Timers" + str(i) #builts key names
-                         self.timers = eval(self.timer_logs[i]) # makes string to dict
-                         self.timer_list_grp = list(self.timers[self.tim_grp_name].keys()) #list of timer names from actual timers line
-                         i2 = 0 #counter for responding timer name
-                         for timer in self.timer_list_grp:
-                             if self.timers[self.tim_grp_name][timer]["Arm"] == 1:
-                                 if self.timers[self.tim_grp_name][timer]["Action"] == 1:
-                                     self.action = "einschalten"
-                                 else:
-                                     self.action = "ausschalten"
-                                 with open("/var/log/mycroft/timersets.log","a") as t:
-                                     t.write(str(self.timer_list_grp[i2])  + " ist gesetzt,  Uhrzeit: " + \
-                                     str(self.timers[self.tim_grp_name][timer]["Time"]) + \
-                                       ", Aktion: " + self.action + ". ")
-                             else:
-                                 pass
-                             i2 += 1
-                     try:
-                         with open("/var/log/mycroft/timersets.log", "r") as tl: #active timers to speech
-                             answer = tl.readline()
-                             if len(answer) == 0:
-                                 answer = ("Zeitpläne sind aktiviert, aber kein Timer ist aktiv.")
-                         with open("/var/log/mycroft/timer.log", "w"): #makes /var/log/mycroft/timer.log empty
-                             pass
-                         with open("/var/log/mycroft/timersets.log", "w"): #makes /var/log/mycroft/timersets.log empty
-                             pass
-                     except IOError as e: #if no timersets.log has been written
-                         answer = ("Zeitpläne sind aktiviert, aber kein Timer ist aktiv.")
-                         with open("/var/log/mycroft/timer.log", "w"): #makes /var/log/mycroft/timer.log empty if timersets.log empty
-                             pass
-        if answer != "":
-            return answer
-
 
 
     def __build_automation_command(self):
@@ -388,8 +339,9 @@ class MyTasmotaDe(MycroftSkill):
         #LOGGER.info('SplitTopic ist: ' + splitTopic[0])
         values = str(msg.payload.decode())
         values_dict = json.loads(values)
+        #LOGGER.info(values_dict)
 
-        if "Timers" in values_dict or "Timers1" in values_dict or \
+        '''if "Timers" in values_dict or "Timers1" in values_dict or \
         "Timers2" in values_dict or  "Timers3" in values_dict or \
         "Timers4" in values_dict:
             try:
@@ -399,7 +351,41 @@ class MyTasmotaDe(MycroftSkill):
                 self.speak(answer)
             except Exception as e:
                 LOGGER.info('Error:  {0}'.format(e))
-                pass
+                pass'''
+        if "Timers" in values_dict:
+            if values_dict['Timers'] == "ON":
+                self.speak_dialog('timers')
+                del values_dict['Timers']
+                counter = 1
+                for key in values_dict:
+                    #print(result_dict[key])
+                    if values_dict[key]['Enable'] == 0:
+                        continue
+                    if values_dict[key]['Enable'] == 1:
+                        #self.speak("Timer 1")
+                        counter_word = str(counter)
+                        moment = values_dict[key]['Time']
+                        moment = moment.replace(":"," Uhr ")
+                        action = values_dict[key]['Action']
+                        if action == 1:
+                            action = "einschalten"
+                        else:
+                            action = "aussschalten"
+                        days = values_dict[key]['Days']
+                        if days == "1111111":
+                            days = "täglich"
+                        elif days == "1000001":
+                            days = "am wochenende"
+                        elif days == "0111110":
+                            days = "montags bis freitags"
+                        else:
+                            days = "an verschiedenen Tagen"
+                        answer = "Timer " + counter_word + ", Uhrzeit: " + moment + ". Aktion: " + action + ", Tage: " + days + "."
+                    self.speak(answer)
+                    #time.sleep(2)
+                    counter += 1
+            if values_dict['Timers'] == "OFF":
+                self.speak_dialog('notimers')
 
         if "StatusSNS" in values_dict and "ENERGY" in values_dict['StatusSNS']:
             '''
