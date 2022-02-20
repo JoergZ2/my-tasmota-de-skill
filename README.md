@@ -1,5 +1,5 @@
 ## Introduction
-This skill is used to control IoT devices that are operated with the Tasmota firmware. Only MQTT (unencrypted, QoS 0) is considered as the communication protocol. The default syntax %prefix%/%topic%/ as well as %topic%/%prefix%/ (= setoption19/homeassistant mode) is available. The skill is currently especially designed for use in German and is case sensitive for topics. The following module must be installed: paho-mqtt.
+This Mycroft.ai skill is used to control IoT devices that are operated with the Tasmota firmware. Only MQTT (unencrypted, QoS 0) is considered as the communication protocol. The default syntax %prefix%/%topic%/ as well as %topic%/%prefix%/ (= setoption19/homeassistant mode) is available. The skill is currently especially designed for use in German and is case sensitive for topics. The following module must be installed: paho-mqtt.
 
 ## Configuration/setup
 ### MQTT Settings
