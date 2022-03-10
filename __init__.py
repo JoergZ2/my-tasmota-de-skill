@@ -7,10 +7,7 @@ from mycroft.util.log import getLogger
 import paho.mqtt.client as mqtt
 from mycroft.util import play_audio_file, resolve_resource_file
 __author__ = 'aussieW (jamiehoward430) modified by JoergZ2'
-from mpd import MPDClient
-mpcc = MPDClient()
 #test
-##comment
 LOGGER = getLogger(__name__)
 class MyTasmotaDe(MycroftSkill):
 
