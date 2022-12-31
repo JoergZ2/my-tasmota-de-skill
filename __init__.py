@@ -251,7 +251,7 @@ class MyTasmotaDe(MycroftSkill):
         mdl_name = mdl_name.replace(' ','_')
         if mdl_name == "werkstatt_radio":
             mdl_name = "werkstattradio"
-        if mdl_name == "messpunkt 1":
+        if mdl_name == "messpunkt_1" or mdl_name == "stromzähler_1":
             mdl_name = "Messpunkt_1"
         if mdl_name == "stromzähler 2":
             mdl_name = "stromzähler_2"
