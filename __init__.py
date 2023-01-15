@@ -50,6 +50,8 @@ class MyTasmotaDe(MycroftSkill):
         self.mqttport = self.settings.get('mqttport')
         self.fulltopicsyntax = self.settings.get('fulltopicsyntax')
         self.capitalization = self.settings.get('capitalization')
+        LOGGER.info(type(self.fulltopicsyntax))
+        LOGGER.info(type(self.capitalization))
         '''
         Under certain conditions the standard topic structure of tasmota is
         changed. the default is %prefix%/%topic%/. But you can change it to
@@ -168,11 +170,11 @@ class MyTasmotaDe(MycroftSkill):
             self.mqttc.subscribe(self.actionConfirmationTopic)
             #LOGGER.info("AJW - connected - about to execute" + "- " + mdl_name + cmd_name)
             if self.fulltopicsyntax == "default":
-                if self.capitalization:
+                if self.capitalization == "yes":
                     mdl_name = mdl_name.capitalize()
                 self.mqttc.publish(self.prefix + mdl_name + command, act_name)
             if self.fulltopicsyntax == "homeassistant":
-                if self.capitalization:
+                if self.capitalization == "yes":
                     mdl_name = mdl_name.capitalize()
                 self.mqttc.publish(mdl_name + self.prefix + command, act_name)
             LOGGER.info("AJW - Published: " + mdl_name + cmd_name, act_name)
@@ -216,7 +218,7 @@ class MyTasmotaDe(MycroftSkill):
             LOGGER.info("AJW - connect to: " + str(self.mqttport))
             mqttc.connect(self.mqtthost,self.mqttport,keepalive=10)
 #            LOGGER.info("AJW - connected - about to execute" + "-" + cmd_name)
-            if self.capitalization:
+            if self.capitalization == "yes":
                 mdl_name = mdl_name.capitalize()
             mqttc.publish(mdl_name + "/" + "cmnd/POWER", act_name)
 #           mqttc.publish("/mediaCenter/" + loc_name + "/" + mdl_name, act_name)
@@ -257,7 +259,7 @@ class MyTasmotaDe(MycroftSkill):
             mdl_name = "stromzähler_2"
         if mdl_name == "außenthermometer" or mdl_name == "aussenthermometer" or mdl_name == "schuppen" or mdl_name == "durchgang":
             mdl_name = "TH10"
-        if self.capitalization:
+        if self.capitalization == "yes":
             mdl_name = mdl_name.capitalize()
             if mdl_name == "Th10":
                 mdl_name = "TH10"

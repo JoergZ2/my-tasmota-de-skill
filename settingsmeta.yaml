@@ -20,6 +20,9 @@ skillMetadata:
     - name: Capitalization
       fields:
         - name: capitalization
-          type: checkbox
-          label: Click if device topics start with capital letters
-          value: "false"
+          type: text
+          label: Write yes if device topics start with capital letters
+          value: yes
+        
+    
+  
