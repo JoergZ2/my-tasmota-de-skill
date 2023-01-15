@@ -50,8 +50,8 @@ class MyTasmotaDe(MycroftSkill):
         self.mqttport = self.settings.get('mqttport')
         self.fulltopicsyntax = self.settings.get('fulltopicsyntax')
         self.capitalization = self.settings.get('capitalization')
-        LOGGER.info(type(self.fulltopicsyntax))
-        LOGGER.info(type(self.capitalization))
+        if self.capitalization == True:
+            self.capitalization = "yes"
         '''
         Under certain conditions the standard topic structure of tasmota is
         changed. the default is %prefix%/%topic%/. But you can change it to
