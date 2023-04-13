@@ -34,7 +34,7 @@ class MyTasmotaDe(MycroftSkill):
 
         self.confirmation_snd = self.settings.get("snd", "")
         if not isfile(self.confirmation_snd):
-                self.confirmation_snd = self.find_resource("verstanden.mp3")
+                self.confirmation_snd = self.find_resource("verstanden.mp3", "res")
         '''
         Under certain conditions the standard topic structure of tasmota is
         changed. the default is %prefix%/%topic%/. But you can change it to
