@@ -23,6 +23,12 @@ skillMetadata:
           type: checkbox
           label: Deactivate if no capitalization 
           value: "true"
+    - name: General Settings
+      fields:
+        - name: snd
+          type: text
+          label: Confirmation Sound (Path)
+          value: ""
         
     
   

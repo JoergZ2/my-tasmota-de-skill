@@ -1,55 +1,40 @@
 import time
 import json
-from os.path import dirname
+from os.path import dirname, isfile
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import MycroftSkill
-from mycroft.util.log import getLogger
+from mycroft.skills import intent_handler
+from ovos_workshop.skills import MycroftSkill
+from ovos_utils.log import LOG
 import paho.mqtt.client as mqtt
-from mycroft.util import play_audio_file, resolve_resource_file
+from mycroft.util import play_audio_file
+
 __author__ = 'aussieW (jamiehoward430) modified by JoergZ2'
-#test
-LOGGER = getLogger(__name__)
+
+
 class MyTasmotaDe(MycroftSkill):
 
     def __init__(self):
-        super(MyTasmotaDe, self).__init__(name="MyTasmotaDe")
+        super(MyTasmotaDe, self).__init__()
         self.default_location = ""
         self.protocol = "mqtt"
         self.mqttssl = ""
         self.mqttca = ""
         self.mqtthost = ""
         self.mqttport = ""
-        #self.mqttauth = self.config[""]
-        #self.mqttuser = self.config[""]
-        #self.mqttpass = self.config[""]
-
-#        if (self.protocol == "mqtt"):
-#            self.mqttc = mqtt.Client("MycroftAI")
-#            if (self.mqttauth == "yes"):
-#                self.mqttc.username_pw_set(self.mqttuser,self.mqttpass)
-#            if (self.mqttssl == "yes"):
-#                self.mqttc.tls_set(self.mqttca)
-#            LOGGER.info("AJW - connect to: " + self.mqtthost)
-#            LOGGER.info("AJW - connect to: " + str(self.mqttport))
-#            self.mqttc.connect(self.mqtthost,self.mqttport,10)
-#            self.mqttc.on_message = self.on_message
-#            self.mqttc.subscribe(dataRequestTopic)
-#            self.mqttc.loop_start()
-
 
     def initialize(self):
         '''
         Reads the preferences from settings.json which is written by
         the skill interface on home.mycroft.ai
         '''
-        self.load_data_files(dirname(__file__))
-        self. __build_automation_command()
-        self. __build_control_command()
-        self. __build_dataRequest_command()
         self.mqtthost = self.settings.get('mqttbroker')
-        self.mqttport = self.settings.get('mqttport')
-        self.fulltopicsyntax = self.settings.get('fulltopicsyntax')
-        self.capitalization = self.settings.get('capitalization')
+        self.mqttport = self.settings.get('mqttport', 1883)
+        self.fulltopicsyntax = self.settings.get('fulltopicsyntax', "%prefix%/%topic%/")
+        self.capitalization = self.settings.get('capitalization', True)
+
+        self.confirmation_snd = self.settings.get("snd")
+        if not isfile(self.confirmation_snd):
+                self.confirmation_snd = self.find_resource("verstanden.mp3")
         '''
         Under certain conditions the standard topic structure of tasmota is
         changed. the default is %prefix%/%topic%/. But you can change it to
@@ -79,68 +64,28 @@ class MyTasmotaDe(MycroftSkill):
         self.watt = str(watt); self.watt = self.watt.replace('.',',')
         return [self.val1, self.val2, self.val3,self.val4,val5, self.watt]
 
-
-
-    def __build_automation_command(self):
-        '''
-        The __build functions are defining which keywords from the intent files
-        are required or optionally. It uses the *.voc files from language directories.
-        By determining which keywords are required and which are optional,
-        the behavior of the skill can be well controlled.
-        The main task of this function is switching or turning devices ON and OFF.
-        '''
-        # example: "Schalte die Pumpe an!" | "Turn on the pump!" 
-        intent = IntentBuilder("automation_Intent")\
-	.require("CommandKeyword")\
-	.require("ModuleKeyword")\
-	.require("ActionKeyword")\
-	.optionally("LocationKeyword")\
-	.build()
-        self.register_intent(intent, self.handle_automation_command)
-
-    def __build_control_command(self):
-        '''
-        The future main task of this function is to manage devices or services
-        for example to make the lights brighter or to change the color or to manage
-        a mediacenter (louder, softer).
-        '''
-        #not used yet
-        intent = IntentBuilder("control_Intent")\
-        .require("ModuleKeyword")\
-        .require("AttributeKeyword")\
-        .require("ValueKeyword")\
-        .optionally("LocationKeyword")\
-        .build()
-        self.register_intent(intent, self.handle_control_command)
-
-    def __build_dataRequest_command(self):
-        '''
-        The main task og this function is to return sensor values from sensors
-        connected to Tasmota flashed devices (temperatur, humidity, pressure, current ...)
-        '''
-	# example: "Wie ist die Temperatur am Außenfühler?" | ""what's the temperature on the deck"
-        intent = IntentBuilder("dataRequest_Intent")\
-        .require("RequestKeyword")\
-        .require("SensorKeyword")\
-        .require("ModuleKeyword")\
-        .optionally("LocationKeyword")\
-        .build()
-        self.register_intent(intent, self.handle_dataRequest_command)
-
+    @intent_handler(IntentBuilder("automation_Intent")
+                    .require("CommandKeyword")
+                    .require("ModuleKeyword")
+                    .require("ActionKeyword")
+                    .optionally("LocationKeyword"))
     def handle_automation_command(self, message):
         '''
         The handle_ ... functions include the commands which are when an
         appropriate combination of required and optional keywords have been
         specified.
+
+        example: "Schalte die Pumpe an!" | "Turn on the pump!" 
+
         Currently the power setting is hard coded. Adaptations are imaginable
         '''
         #Beispiel "Schalte den|die|das <MQTT-Name des Gerätes> an"
         command = "/POWER"
-        #LOGGER.info('AJW: mqtt automation command')
+        #LOG.info('AJW: mqtt automation command')
         cmd_name = message.data.get("CommandKeyword")
         mdl_name = message.data.get("ModuleKeyword")
         mdl_name = mdl_name.replace(' ', '_')
-        if mdl_name == "werkstatt_radio":
+        if mdl_name == "werkstatt_radio":   
             mdl_name = "werkstattradio"
         act_name = message.data.get("ActionKeyword")
         loc_name = message.data.get("LocationKeyword")
@@ -158,15 +103,15 @@ class MyTasmotaDe(MycroftSkill):
             #    mqttc.username_pw_set(self.mqttuser,self.mqttpass)
             #if (self.mqttssl == "yes"):
             #    mqttc.tls_set(self.mqttca)
-            LOGGER.info("AJW - Module automation_command connect to: " + str(self.mqttport))
-            play_audio_file(resolve_resource_file("/home/pi/mycroft-core/mycroft/res/snd/verstanden.mp3"))
+            LOG.info("AJW - Module automation_command connect to: " + str(self.mqttport))
+            play_audio_file(self.confirmation_snd)
             #self.speak_dialog('verstanden')
             time.sleep(1.0)
             self.mqttc.connect(self.mqtthost, self.mqttport, keepalive=10)
             self.mqttc.on_message = self.on_message
             self.mqttc.loop_start()
             self.mqttc.subscribe(self.actionConfirmationTopic)
-            #LOGGER.info("AJW - connected - about to execute" + "- " + mdl_name + cmd_name)
+            #LOG.info("AJW - connected - about to execute" + "- " + mdl_name + cmd_name)
             if self.fulltopicsyntax == "default":
                 if self.capitalization == True:
                     mdl_name = mdl_name.capitalize()
@@ -175,15 +120,19 @@ class MyTasmotaDe(MycroftSkill):
                 if self.capitalization == True:
                     mdl_name = mdl_name.capitalize()
                 self.mqttc.publish(mdl_name + self.prefix + command, act_name)
-            LOGGER.info("AJW - Published: " + mdl_name + cmd_name, act_name)
+            LOG.info("AJW - Published: " + mdl_name + cmd_name, act_name)
 	    #allow time for the action to be performed and a confirmation to be returned
             time.sleep(1)
             self.mqttc.disconnect()
 
         else:
-            self.speak_dialog("not.found", {"command": cmd_name, "action": act_name, "module": dev_name})
-            LOGGER.error("Error: {0}".format(e))
+            self.speak_dialog("not.found", {"command": cmd_name, "action": act_name, "module": mdl_name})
 
+    @intent_handler(IntentBuilder("control_Intent")
+                    .require("ModuleKeyword")
+                    .require("AttributeKeyword")
+                    .require("ValueKeyword")
+                    .optionally("LocationKeyword"))
     def handle_control_command(self, message):
         '''
         These commands are to change settings. It will not be about switching
@@ -203,7 +152,7 @@ class MyTasmotaDe(MycroftSkill):
         else:
             loc_name = self.default_location
 
-        LOGGER.info('AJW: att: ' + att_name + '; mdl: ' + mdl_name + '; val: ' + val_name + '; loc: ' + loc_name)
+        LOG.info('AJW: att: ' + att_name + '; mdl: ' + mdl_name + '; val: ' + val_name + '; loc: ' + loc_name)
 
 #        if act_name:
 #            cmd_name += '_' + act_name
@@ -212,24 +161,27 @@ class MyTasmotaDe(MycroftSkill):
             mqttc = mqtt.Client("MycroftAI")
             if (self.mqttssl == "yes"):
                 mqttc.tls_set(self.mqttca)
-            LOGGER.info("AJW - connect to: " + self.mqtthost)
-            LOGGER.info("AJW - connect to: " + str(self.mqttport))
+            LOG.info("AJW - connect to: " + self.mqtthost)
+            LOG.info("AJW - connect to: " + str(self.mqttport))
             mqttc.connect(self.mqtthost,self.mqttport,keepalive=10)
-#            LOGGER.info("AJW - connected - about to execute" + "-" + cmd_name)
+#            LOG.info("AJW - connected - about to execute" + "-" + cmd_name)
             if self.capitalization == True:
                 mdl_name = mdl_name.capitalize()
             mqttc.publish(mdl_name + "/" + "cmnd/POWER", act_name)
 #           mqttc.publish("/mediaCenter/" + loc_name + "/" + mdl_name, act_name)
-            #LOGGER.info("Funk control command AJW - Published: " + loc_name + "/" + mdl_name + ", " + act_name)
+            #LOG.info("Funk control command AJW - Published: " + loc_name + "/" + mdl_name + ", " + act_name)
             mqttc.disconnect()
             self.speak_dialog("cmd.sent")
-#            LOGGER.info(mdl_name + "-" + cmd_name)
+#            LOG.info(mdl_name + "-" + cmd_name)
 
         else:
-            self.speak_dialog("not.found", {"command": cmd_name, "action": act_name, "module": dev_name})
+            self.speak_dialog("not.found", {"command": cmd_name, "action": sen_name, "module": mdl_name})
 
-            LOGGER.error("Error: {0}".format(e))
-
+    @intent_handler(IntentBuilder("dataRequest_Intent")
+                    .require("RequestKeyword")
+                    .require("SensorKeyword")
+                    .require("ModuleKeyword")
+                    .optionally("LocationKeyword"))
     def handle_dataRequest_command(self, message):
         '''
         This function is used to call up the measured values of the sensors.
@@ -243,6 +195,8 @@ class MyTasmotaDe(MycroftSkill):
         used to filter which status information is retrieved.
         The following on_message function also filters which values should be
         announced.
+
+        example: "Wie ist die Temperatur am Außenfühler?" | ""what's the temperature on the deck"
         '''
         req_name = message.data.get("RequestKeyword")
         sen_name = message.data.get("SensorKeyword")
@@ -274,9 +228,9 @@ class MyTasmotaDe(MycroftSkill):
                 #self.mqttc.username_pw_set(self.mqttuser,self.mqttpass)
             #if (self.mqttssl == "yes"):
                 #self.mqttc.tls_set(self.mqttca)
-            LOGGER.info("Funk Request AJW - connect to: " + str(self.mqtthost))
-            #LOGGER.info("AJW - connect to: " + str(self.mqttport))
-            play_audio_file(resolve_resource_file("/home/pi/mycroft-core/mycroft/res/snd/verstanden.mp3"))
+            LOG.info("Funk Request AJW - connect to: " + str(self.mqtthost))
+            #LOG.info("AJW - connect to: " + str(self.mqttport))
+            play_audio_file(self.confirmation_snd)
             #self.speak_dialog('verstanden')
             time.sleep(1)
             self.mqttc.connect(self.mqtthost,self.mqttport)
@@ -303,13 +257,12 @@ class MyTasmotaDe(MycroftSkill):
                 #self.mqttc.subscribe(mdl_name + result + '/#')
                 self.mqttc.subscribe(self.actionConfirmationTopic)
             self.mqttc.publish(dataRequestTopic, payload)
-            LOGGER.info("AJW - Published: "+ dataRequestTopic + " " + str(payload))
+            LOG.info("AJW - Published: "+ dataRequestTopic + " " + str(payload))
             #self.payload = json.loads(msg.payload.decode())
             time.sleep(1)
             self.mqttc.disconnect()
         else:
-            self.speak_dialog("not.found", {"command": cmd_name, "action": act_name, "module": dev_name})
-            LOGGER.error("Error: {0}".format(e))
+            self.speak_dialog("not.found", {"command": req_name, "action": sen_name, "module": mdl_name})
 
         
     def stop(self):
@@ -327,16 +280,16 @@ class MyTasmotaDe(MycroftSkill):
         answers in dialog files and mix them with the variables with the
         measured values.
         '''
-        LOGGER.info('AJW: Topicmytasmotade = ' + msg.topic)
+        LOG.info('AJW: Topicmytasmotade = ' + msg.topic)
         splitTopic = msg.topic.split('/')
         if self.fulltopicsyntax == "default":
             device_name = splitTopic[1]
         if self.fulltopicsyntax == "homeassistant":
             device_name = splitTopic[0]
-        #LOGGER.info('SplitTopic ist: ' + splitTopic[0])
+        #LOG.info('SplitTopic ist: ' + splitTopic[0])
         values = str(msg.payload.decode())
         values_dict = json.loads(values)
-        #LOGGER.info(values_dict)
+        #LOG.info(values_dict)
 
         '''if "Timers" in values_dict or "Timers1" in values_dict or \
         "Timers2" in values_dict or  "Timers3" in values_dict or \
@@ -347,7 +300,7 @@ class MyTasmotaDe(MycroftSkill):
                 answer = self.timer_request_answer()
                 self.speak(answer)
             except Exception as e:
-                LOGGER.info('Error:  {0}'.format(e))
+                LOG.info('Error:  {0}'.format(e))
                 pass'''
         if "Timers" in values_dict:
             if values_dict['Timers'] == "ON":
@@ -431,31 +384,29 @@ class MyTasmotaDe(MycroftSkill):
             value_power = value_power.replace('ON','an').replace('OFF','aus')
             answer = "Der Schaltzustand ist " + value_power + "."
             #self.speak_dialog('aus')
-            #LOGGER.info("Antwort: " + answer)
+            #LOG.info("Antwort: " + answer)
         elif "POWER" in values_dict:
-            #LOGGER.info("Power empfangen")
+            #LOG.info("Power empfangen")
             value_power = values_dict['POWER']
             value_power = value_power.replace('ON','an').replace('OFF','aus')
             answer = device_name + " ist " + value_power + "geschaltet."
             #self.speak_dialogue('an')
 
         else:
-            LOGGER.info('AJW: Received a message' + values_dict)
+            LOG.info('AJW: Received a message' + values_dict)
             return
        # if msg.topic == actionConfirmationTopic:
         if msg.topic != '':
             if msg.payload != '':
-                LOGGER.info('AJW: Requested action was successful')
-                #LOGGER.info("Sprechtext: " + answer)
+                LOG.info('AJW: Requested action was successful')
+                #LOG.info("Sprechtext: " + answer)
                 self.speak(answer)
                 #self.speak_dialog('action.successful')
             else:
-                LOGGER.info('AJW: Requested action was unsuccessful')
+                LOG.info('AJW: Requested action was unsuccessful')
                 self.speak_dialog('action.unsuccessful')
             return
 
 def create_skill():
-#    myskill = MyTasmotaDe()
-#    return myskill
     return MyTasmotaDe()
 
