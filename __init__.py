@@ -32,7 +32,7 @@ class MyTasmotaDe(MycroftSkill):
         self.fulltopicsyntax = self.settings.get('fulltopicsyntax', "%prefix%/%topic%/")
         self.capitalization = self.settings.get('capitalization', True)
 
-        self.confirmation_snd = self.settings.get("snd")
+        self.confirmation_snd = self.settings.get("snd", "")
         if not isfile(self.confirmation_snd):
                 self.confirmation_snd = self.find_resource("verstanden.mp3")
         '''
