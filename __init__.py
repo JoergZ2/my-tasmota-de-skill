@@ -1,12 +1,16 @@
 import time
 import json
 from os.path import dirname, isfile
+
+import paho.mqtt.client as mqtt
+
 from adapt.intent import IntentBuilder
 from mycroft.skills import intent_handler
 from ovos_workshop.skills import MycroftSkill
-from ovos_utils.log import LOG
-import paho.mqtt.client as mqtt
 from mycroft.util import play_audio_file
+from ovos_utils import classproperty
+from ovos_utils.process_utils import RuntimeRequirements
+from ovos_utils.log import LOG
 
 __author__ = 'aussieW (jamiehoward430) modified by JoergZ2'
 
@@ -21,6 +25,18 @@ class MyTasmotaDe(MycroftSkill):
         self.mqttca = ""
         self.mqtthost = ""
         self.mqttport = ""
+    
+    @classproperty
+    def runtime_requirements(self):
+        return RuntimeRequirements(internet_before_load=False,
+                                   network_before_load=True,
+                                   gui_before_load=False,
+                                   requires_internet=False,
+                                   requires_network=True,
+                                   requires_gui=False,
+                                   no_internet_fallback=False,
+                                   no_network_fallback=False,
+                                   no_gui_fallback=False)
 
     def initialize(self):
         '''
